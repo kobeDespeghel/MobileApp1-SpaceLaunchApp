@@ -1,4 +1,5 @@
 import { View, FlatList, StyleSheet, Text } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 
 import LaunchListItem from "./LaunchListItem";
 import LaunchListHeader from "./LaunchListHeader";
@@ -36,7 +37,7 @@ export default function LaunchList({
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <FlashList
         data={items}
         renderItem={({ item }) => (
           <LaunchListItem
