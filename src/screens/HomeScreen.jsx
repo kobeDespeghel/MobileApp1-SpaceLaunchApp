@@ -1,10 +1,11 @@
 import { StatusBar } from "expo-status-bar";
 import { View, Text, StyleSheet } from "react-native";
+import LaunchList from "../components/LaunchList";
 
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      <Text>Welcome to the Home Screen!</Text>
+      <LaunchList />
       <StatusBar barStyle="default" />
     </View>
   );
