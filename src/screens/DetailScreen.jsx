@@ -1,19 +1,33 @@
 import { StatusBar } from "expo-status-bar";
-import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import { useState, useEffect } from "react";
+import { GetLaunchById } from "../helpers/apiCalls";
 
-export default function DetailScreen({ launchId }) {
-  // Sample launch object for now — replace with real data / route params later
-  const launch = {
-    id: launchId,
-    name: "Falcon 9 • Starlink 7",
-    status: "Go",
-    windowStart: "2025-11-08T14:30:00Z",
-    windowEnd: "2025-11-08T14:45:00Z",
-    imageUrl: "https://www.spacex.com/static/images/share.jpg",
-    provider: { name: "SpaceX", country: "USA" },
-    mission:
-      "Deploying a batch of Starlink satellites to low Earth orbit during a 15-minute launch window. Primary payload separation is expected ~15 minutes after liftoff. This mission will also perform a first-stage return to Landing Zone 1.",
-  };
+export default function DetailScreen({ route }) {
+  const [launch, setLaunch] = useState(null);
+  const launchId = route?.params?.launchId;
+
+  useEffect(() => {
+    const fetchLaunchDetail = async () => {
+      const result = await GetLaunchById(launchId);
+
+      if (result && !result.error) {
+        setLaunch(result);
+        console.log("Launch image URL:", launch.imageUrl);
+      } else {
+        console.error("Failed to fetch launch detail:", result?.error);
+      }
+    };
+
+    fetchLaunchDetail();
+  }, [launchId]);
 
   const formatDateTime = (iso) => {
     try {
@@ -25,45 +39,59 @@ export default function DetailScreen({ launchId }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image source={{ uri: launch.imageUrl }} style={styles.image} />
-
-      <View style={styles.header}>
-        <Text style={styles.title}>{launch.name}</Text>
-        <View
-          style={[
-            styles.statusPill,
-            launch.status === "Go" ? styles.statusGo : styles.statusNoGo,
-          ]}
-        >
-          <Text style={styles.statusText}>{launch.status}</Text>
+      {!launch ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0a9e3b" />
+          <Text style={styles.loadingText}>Loading launch details…</Text>
         </View>
-      </View>
+      ) : (
+        <>
+          <Image source={{ uri: launch.imageUrl }} style={styles.image} />
 
-      <View style={styles.row}>
-        <Text style={styles.label}>Window start</Text>
-        <Text style={styles.value}>{formatDateTime(launch.windowStart)}</Text>
-      </View>
+          <View style={styles.header}>
+            <Text style={styles.title}>{launch.name}</Text>
+            <View
+              style={[
+                styles.statusPill,
+                launch.status === "Go" ? styles.statusGo : styles.statusNoGo,
+              ]}
+            >
+              <Text style={styles.statusText}>{launch.status}</Text>
+            </View>
+          </View>
 
-      <View style={styles.row}>
-        <Text style={styles.label}>Window end</Text>
-        <Text style={styles.value}>{formatDateTime(launch.windowEnd)}</Text>
-      </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Window start</Text>
+            <Text style={styles.value}>
+              {formatDateTime(launch.window_start ?? launch.windowStart)}
+            </Text>
+          </View>
 
-      <View style={styles.provider}>
-        <Text style={styles.label}>Provider</Text>
-        <Text style={styles.value}>
-          {launch.provider.name} • {launch.provider.country}
-        </Text>
-      </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Window end</Text>
+            <Text style={styles.value}>
+              {formatDateTime(launch.window_end ?? launch.windowEnd)}
+            </Text>
+          </View>
 
-      <View style={styles.mission}>
-        <Text style={styles.label}>Mission</Text>
-        <Text style={styles.description}>{launch.mission}</Text>
-      </View>
+          <View style={styles.provider}>
+            <Text style={styles.label}>Provider</Text>
+            <Text style={styles.value}>
+              {launch.provider?.name}
+              {launch.provider?.country ? ` • ${launch.provider.country}` : ""}
+            </Text>
+          </View>
 
-      <Text style={styles.footer}>Launch ID: {launch.id}</Text>
+          <View style={styles.mission}>
+            <Text style={styles.label}>Mission</Text>
+            <Text style={styles.description}>{launch.mission}</Text>
+          </View>
 
-      <StatusBar style="auto" />
+          <Text style={styles.footer}>Launch ID: {launch.id}</Text>
+
+          <StatusBar style="auto" />
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -143,5 +171,15 @@ const styles = StyleSheet.create({
     marginTop: 18,
     color: "#888",
     textAlign: "center",
+  },
+  loadingContainer: {
+    paddingTop: 40,
+    paddingBottom: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    color: "#666",
   },
 });
