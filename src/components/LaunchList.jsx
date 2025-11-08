@@ -79,22 +79,22 @@ import { GetUpcommingLaunches } from "../helpers/apiCalls";
 //   },
 // ];
 
-export default function LaunchList({ onLaunchPress }) {
-  const [launches, setLaunches] = useState([]);
+export default function LaunchList({ onLaunchPress, launches }) {
+  // const [launches, setLaunches] = useState([]);
 
-  //runs once
-  useEffect(() => {
-    const fetchLaunches = async () => {
-      const result = await GetUpcommingLaunches();
-      if (result && !result.error) {
-        setLaunches(result);
-      } else {
-        console.error("Failed to fetch launches:", result.error);
-      }
-    };
+  // //runs once
+  // useEffect(() => {
+  //   const fetchLaunches = async () => {
+  //     const result = await GetUpcommingLaunches();
+  //     if (result && !result.error) {
+  //       setLaunches(result);
+  //     } else {
+  //       console.error("Failed to fetch launches:", result.error);
+  //     }
+  //   };
 
-    fetchLaunches();
-  }, []);
+  //   fetchLaunches();
+  // }, []);
 
   return (
     <View style={styles.container}>

@@ -1,8 +1,12 @@
 const baseUrl = "https://lldev.thespacedevs.com/2.3.0";
 
-export async function GetUpcommingLaunches(limit = 20, offset = 0) {
+export async function GetUpcommingLaunches(
+  searchQuery = "",
+  limit = 20,
+  offset = 0
+) {
   // Fetch upcoming launches from TheSpaceDevs API and map to a simplified shape.
-  const url = `${baseUrl}/launches/upcoming?mode=list&limit=${limit}&offset=${offset}`;
+  const url = `${baseUrl}/launches/upcoming?mode=list&limit=${limit}&offset=${offset}&search=${searchQuery}`;
 
   return await fetch(url)
     .then(async (response) => {
