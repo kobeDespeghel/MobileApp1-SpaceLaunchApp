@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Button, TouchableOpacity } from "react-native";
 
 function formatShortDateTime(isoString) {
   if (!isoString) return "";
@@ -18,12 +18,12 @@ function formatShortDateTime(isoString) {
   }
 }
 
-export default function LaunchListItem({ launch }) {
+export default function LaunchListItem({ launch, onPress }) {
   // simple row layout matching header columns
   const formattedStart = formatShortDateTime(launch.startwindow);
 
   return (
-    <View style={styles.row}>
+    <TouchableOpacity title="go to detail" style={styles.row} onPress={onPress}>
       <Text style={[styles.cell, styles.name]} numberOfLines={1}>
         {launch.name}
       </Text>
@@ -31,10 +31,7 @@ export default function LaunchListItem({ launch }) {
       <Text style={[styles.cell, styles.start]} numberOfLines={1}>
         {formattedStart}
       </Text>
-      {/* <Text style={[styles.cell, styles.end]} numberOfLines={1}>
-        {launch.endwindow}
-      </Text> */}
-    </View>
+    </TouchableOpacity>
   );
 }
 

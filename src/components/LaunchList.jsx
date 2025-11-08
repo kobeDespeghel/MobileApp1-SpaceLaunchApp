@@ -77,12 +77,17 @@ const launches = [
   },
 ];
 
-export default function LaunchList() {
+export default function LaunchList({ onLaunchPress }) {
   return (
     <View style={styles.container}>
       <FlatList
         data={launches}
-        renderItem={({ item }) => <LaunchListItem launch={item} />}
+        renderItem={({ item }) => (
+          <LaunchListItem
+            launch={item}
+            onPress={() => onLaunchPress(item.id)}
+          />
+        )}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={LaunchListHeader}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
