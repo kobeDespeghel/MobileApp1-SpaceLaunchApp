@@ -4,6 +4,10 @@
 
 SpaceLaunchApp is een kleine React Native (Expo) applicatie die aankomende lanceringen ophaalt en toont in een lijst. Je kunt zoeken, filteren op status en sorteren op naam of starttijd. De app gebruikt de openbare TheSpaceDevs API voor lanceerdata.
 
+## github repository
+
+- Repository URL: `https://github.com/kobeDespeghel/MobileApp1-SpaceLaunchApp`
+
 ## Gebruikte API
 
 De app gebruikt TheSpaceDevs (lokale dev endpoint) API:
