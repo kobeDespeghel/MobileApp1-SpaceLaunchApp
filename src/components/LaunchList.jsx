@@ -8,49 +8,55 @@ export default function LaunchList({
   onLaunchPress,
   launches,
   sortBy,
-  sortDir,
+  sortDirection,
 }) {
-  const items = Array.isArray(launches) ? [...launches] : [];
+  const items = Array.isArray(launches) ? launches : [];
 
   if (sortBy) {
-    const dir = sortDir === "desc" ? -1 : 1;
+    const dir = sortDirection === "asc" ? 1 : -1;
 
     if (sortBy === "name") {
       items.sort((a, b) => {
-        const an = (a.name || "").toString();
-        const bn = (b.name || "").toString();
-        return an.localeCompare(bn, undefined, { sensitivity: "base" }) * dir;
+        const aName = a.name.toString();
+        const bName = b.name.toString();
+        return aName.localeCompare(bName) * dir;
       });
     }
 
     if (sortBy === "start") {
       items.sort((a, b) => {
-        const ta = a.startwindow ? Date.parse(a.startwindow) : 0;
-        const tb = b.startwindow ? Date.parse(b.startwindow) : 0;
-        // treat invalid dates as 0 so they appear first in asc; adjust if desired
-        const na = Number.isNaN(ta) ? 0 : ta;
-        const nb = Number.isNaN(tb) ? 0 : tb;
+        const aTime = Date.parse(a.startwindow) ?? 0;
+        const bTime = Date.parse(b.startwindow) ?? 0;
+
+        const na = aTime;
+        const nb = bTime;
         return (na - nb) * dir;
       });
     }
   }
 
+  const data = [{ isHeader: true, id: "header" }, ...items];
+
   return (
     <View style={styles.container}>
       <FlashList
-        data={items}
-        renderItem={({ item }) => (
-          <LaunchListItem
-            launch={item}
-            onPress={() => onLaunchPress(item.id)}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={LaunchListHeader}
+        data={data}
+        renderItem={({ item }) =>
+          item && item.isHeader ? (
+            <LaunchListHeader />
+          ) : (
+            <LaunchListItem
+              launch={item}
+              onPress={() => onLaunchPress(item.id)}
+            />
+          )
+        }
+        keyExtractor={(item) => (item && item.isHeader ? item.id : item.id)}
+        // header is the first data element; make it sticky
+        stickyHeaderIndices={[0]}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
-        // stickyHeaderIndices={[0]} // need to make header first component in list
       />
     </View>
   );

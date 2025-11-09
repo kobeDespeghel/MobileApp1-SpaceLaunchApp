@@ -8,46 +8,46 @@ import {
 } from "react-native";
 import LaunchList from "../components/LaunchList";
 import { useEffect, useState } from "react";
-import { GetUpcommingLaunches } from "../helpers/apiCalls";
+import { GetUpcommingLaunches, GetStatuses } from "../helpers/apiCalls";
 import DropDown from "../components/DropDown";
 
 export default function HomeScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [launches, setLaunches] = useState([]);
   const [sortBy, setSortBy] = useState(null); // 'name' | 'start' | null
-  const [sortDir, setSortDir] = useState("asc"); // 'asc' | 'desc'
+  const [sortDirection, setSortDirection] = useState("asc"); // 'asc' | 'desc'
   const [filterStatus, setFilterStatus] = useState("All");
   const [statuses, setStatuses] = useState(["All"]);
-  // const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-
-  // helper to normalize/extract a status string from a launch object
-  const getLaunchStatus = (l) => {
-    if (!l) return "unknown";
-    if (typeof l.status === "string") return l.status;
-    if (l.status && typeof l.status === "object") {
-      return l.status.name || l.status.abbrev || l.status?.status || "unknown";
-    }
-    return l.statusName || l.status_name || l.status_text || "unknown";
-  };
 
   //runs once
   useEffect(() => {
+    fetchStatuses();
     fetchLaunches();
   }, []);
+
+  useEffect(() => {
+    let selectedStatus = statuses.find((s) => s.abbrev === filterStatus);
+    console.log("Selected filter status:", selectedStatus);
+    fetchLaunches(selectedStatus?.id || null);
+  }, [filterStatus]);
 
   const handleLaunchPress = (launchId) => {
     navigation.navigate("Detail", { launchId });
   };
 
-  const fetchLaunches = async () => {
-    const result = await GetUpcommingLaunches(searchQuery);
+  const fetchStatuses = async () => {
+    const result = await GetStatuses();
+    if (result && !result.error) {
+      setStatuses([{ id: 0, abbrev: "All" }, ...result]);
+    } else {
+      console.error("Failed to fetch statuses:", result.error);
+    }
+  };
+
+  const fetchLaunches = async (filterStatusId = null) => {
+    const result = await GetUpcommingLaunches(searchQuery, filterStatusId);
     if (result && !result.error) {
       setLaunches(result);
-      // derive unique statuses from the returned launches
-      const unique = Array.from(
-        new Set(result.map((r) => getLaunchStatus(r) || "unknown"))
-      );
-      setStatuses(["All", ...unique.filter((s) => s != null && s !== "")]);
     } else {
       console.error("Failed to fetch launches:", result.error);
     }
@@ -55,10 +55,10 @@ export default function HomeScreen({ navigation }) {
 
   const toggleSort = (field) => {
     if (sortBy === field) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
     } else {
       setSortBy(field);
-      setSortDir("asc");
+      setSortDirection("asc");
     }
   };
 
@@ -84,7 +84,8 @@ export default function HomeScreen({ navigation }) {
           onPress={() => toggleSort("name")}
         >
           <Text style={styles.sortText}>
-            Name {sortBy === "name" ? (sortDir === "asc" ? "↓" : "↑") : ""}
+            Name{" "}
+            {sortBy === "name" ? (sortDirection === "asc" ? "↓" : "↑") : ""}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -95,53 +96,28 @@ export default function HomeScreen({ navigation }) {
           onPress={() => toggleSort("start")}
         >
           <Text style={styles.sortText}>
-            Start {sortBy === "start" ? (sortDir === "asc" ? "↓" : "↑") : ""}
+            Start{" "}
+            {sortBy === "start" ? (sortDirection === "asc" ? "↓" : "↑") : ""}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Status filter dropdown */}
-      <DropDown filterList={statuses} selectFilter={setFilterStatus} />
-      {/* <View style={styles.filterRow}>
-        <TouchableOpacity
-          style={[
-            styles.filterButton,
-            filterStatus !== "All" && styles.filterButtonActive,
-          ]}
-          onPress={() => setShowStatusDropdown((s) => !s)}
-        >
-          <Text style={styles.sortText}>{`Status: ${filterStatus}`}</Text>
-        </TouchableOpacity>
-        {showStatusDropdown && (
-          <View style={styles.dropdown}>
-            {statuses.map((s) => (
-              <TouchableOpacity
-                key={s}
-                style={styles.dropdownItem}
-                onPress={() => {
-                  setFilterStatus(s);
-                  setShowStatusDropdown(false);
-                }}
-              >
-                <Text style={styles.sortText}>{s}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View> */}
-
-      {/* filter launches client-side by selected status */}
-      {/** compute filtered launches */}
-      <LaunchList
-        launches={launches.filter((l) => {
-          if (!filterStatus || filterStatus === "All") return true;
-          const s = getLaunchStatus(l);
-          return s === filterStatus;
-        })}
-        onLaunchPress={(id) => handleLaunchPress(id)}
-        sortBy={sortBy}
-        sortDir={sortDir}
+      <DropDown
+        filterList={statuses.map((s) => s.abbrev)}
+        selectFilter={setFilterStatus}
       />
+
+      {launches.length === 0 ? (
+        <Text>No launches found.</Text>
+      ) : (
+        <LaunchList
+          launches={launches}
+          onLaunchPress={(id) => handleLaunchPress(id)}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+        />
+      )}
       <StatusBar barStyle="default" />
     </View>
   );
@@ -152,7 +128,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
-    justifyContent: "center",
   },
   searchBar: {
     width: "100%",

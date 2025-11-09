@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 
 export default function DropDown({ filterList, selectFilter }) {
   const [filter, setFilter] = useState("All");
@@ -22,9 +22,9 @@ export default function DropDown({ filterList, selectFilter }) {
       </TouchableOpacity>
       {showDropdown && (
         <View style={styles.dropdown}>
-          {filterList.map((s) => (
+          {(filterList || []).map((s, i) => (
             <TouchableOpacity
-              key={s}
+              key={typeof s === "string" ? `${s}-${i}` : `item-${i}`}
               style={styles.dropdownItem}
               onPress={() => {
                 setFilter(s);

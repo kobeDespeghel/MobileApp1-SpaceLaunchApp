@@ -1,12 +1,16 @@
-const baseUrl = "https://lldev.thespacedevs.com/2.3.0";
+const settings = require("../../settings.json");
+let baseUrl = settings.apiSettings.baseUrl;
 
 export async function GetUpcommingLaunches(
   searchQuery = "",
+  status = null,
   limit = 100,
   offset = 0
 ) {
   // Fetch upcoming launches from TheSpaceDevs API and map to a simplified shape.
-  const url = `${baseUrl}/launches/upcoming?mode=list&limit=${limit}&offset=${offset}&search=${searchQuery}`;
+  const url = `${baseUrl}/launches/upcoming?mode=list&limit=${limit}&offset=${offset}&search=${searchQuery}&status=${
+    status || ""
+  }`;
 
   return await fetch(url)
     .then(async (response) => {
@@ -19,11 +23,7 @@ export async function GetUpcommingLaunches(
 
       const data = await response.json();
 
-      if (
-        data.results === null ||
-        data.results === undefined ||
-        data.results.length === 0
-      ) {
+      if (data.results === null || data.results === undefined) {
         return { error: "No upcoming launches found." };
       }
 
@@ -53,6 +53,30 @@ export async function GetLaunchById(launchId) {
     }
 
     return mapLaunchDetail(data);
+  });
+}
+
+export async function GetStatuses() {
+  const url = `${baseUrl}/config/launch_statuses/`;
+
+  return await fetch(url).then(async (response) => {
+    if (!response.ok) {
+      const text = await response.json();
+      console.log("Error response text:", text);
+      return {
+        error: `Launch fetch failed: ${response.status} ${response.statusText} - ${text}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (data === null || data === undefined) {
+      return { error: "Statuses were not found" };
+    }
+    return data.results.map((status) => ({
+      id: status.id,
+      abbrev: status.abbrev,
+    }));
   });
 }
 
