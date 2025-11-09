@@ -21,6 +21,7 @@ function formatShortDateTime(isoString) {
 export default function LaunchListItem({ launch, onPress }) {
   // simple row layout matching header columns
   const formattedStart = formatShortDateTime(launch.startwindow);
+  const formattedEnd = formatShortDateTime(launch.endwindow);
 
   return (
     <TouchableOpacity title="go to detail" style={styles.row} onPress={onPress}>
@@ -28,9 +29,14 @@ export default function LaunchListItem({ launch, onPress }) {
         {launch.name}
       </Text>
       <Text style={[styles.cell, styles.status]}>{launch.status}</Text>
-      <Text style={[styles.cell, styles.start]} numberOfLines={1}>
-        {formattedStart}
-      </Text>
+      <View style={[styles.cell, styles.window]}>
+        <Text style={styles.cell} numberOfLines={1}>
+          {formattedStart}
+        </Text>
+        <Text style={styles.cell} numberOfLines={1}>
+          {formattedEnd}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -52,10 +58,8 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
   },
-  start: {
+  window: {
     flex: 2,
-  },
-  end: {
-    flex: 2,
+    flexDirection: "column",
   },
 });

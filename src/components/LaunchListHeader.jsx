@@ -5,8 +5,7 @@ export default function LaunchListHeader() {
     <View style={styles.header}>
       <Text style={[styles.headerText, styles.name]}>Name</Text>
       <Text style={[styles.headerText, styles.status]}>Status</Text>
-      <Text style={[styles.headerText, styles.start]}>Start Window</Text>
-      {/* <Text style={[styles.headerText, styles.end]}>End Window</Text> */}
+      <Text style={[styles.headerText, styles.window]}>Window</Text>
     </View>
   );
 }
@@ -32,10 +31,8 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
   },
-  start: {
+  window: {
     flex: 2,
-  },
-  end: {
-    flex: 2,
+    textAlign: "right",
   },
 });

@@ -50,7 +50,7 @@ export default function LaunchList({
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[0]}
+        // stickyHeaderIndices={[0]} // need to make header first component in list
       />
     </View>
   );

@@ -2,7 +2,7 @@ const baseUrl = "https://lldev.thespacedevs.com/2.3.0";
 
 export async function GetUpcommingLaunches(
   searchQuery = "",
-  limit = 20,
+  limit = 100,
   offset = 0
 ) {
   // Fetch upcoming launches from TheSpaceDevs API and map to a simplified shape.
@@ -78,6 +78,7 @@ function mapListLaunches(data) {
     name: item.name,
     status: item.status?.abbrev,
     startwindow: item.window_start,
+    endwindow: item.window_end,
   }));
 
   return launches;

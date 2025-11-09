@@ -9,12 +9,26 @@ import {
 import LaunchList from "../components/LaunchList";
 import { useEffect, useState } from "react";
 import { GetUpcommingLaunches } from "../helpers/apiCalls";
+import DropDown from "../components/DropDown";
 
 export default function HomeScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [launches, setLaunches] = useState([]);
   const [sortBy, setSortBy] = useState(null); // 'name' | 'start' | null
   const [sortDir, setSortDir] = useState("asc"); // 'asc' | 'desc'
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [statuses, setStatuses] = useState(["All"]);
+  // const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+
+  // helper to normalize/extract a status string from a launch object
+  const getLaunchStatus = (l) => {
+    if (!l) return "unknown";
+    if (typeof l.status === "string") return l.status;
+    if (l.status && typeof l.status === "object") {
+      return l.status.name || l.status.abbrev || l.status?.status || "unknown";
+    }
+    return l.statusName || l.status_name || l.status_text || "unknown";
+  };
 
   //runs once
   useEffect(() => {
@@ -29,6 +43,11 @@ export default function HomeScreen({ navigation }) {
     const result = await GetUpcommingLaunches(searchQuery);
     if (result && !result.error) {
       setLaunches(result);
+      // derive unique statuses from the returned launches
+      const unique = Array.from(
+        new Set(result.map((r) => getLaunchStatus(r) || "unknown"))
+      );
+      setStatuses(["All", ...unique.filter((s) => s != null && s !== "")]);
     } else {
       console.error("Failed to fetch launches:", result.error);
     }
@@ -80,8 +99,45 @@ export default function HomeScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Status filter dropdown */}
+      <DropDown filterList={statuses} selectFilter={setFilterStatus} />
+      {/* <View style={styles.filterRow}>
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            filterStatus !== "All" && styles.filterButtonActive,
+          ]}
+          onPress={() => setShowStatusDropdown((s) => !s)}
+        >
+          <Text style={styles.sortText}>{`Status: ${filterStatus}`}</Text>
+        </TouchableOpacity>
+        {showStatusDropdown && (
+          <View style={styles.dropdown}>
+            {statuses.map((s) => (
+              <TouchableOpacity
+                key={s}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setFilterStatus(s);
+                  setShowStatusDropdown(false);
+                }}
+              >
+                <Text style={styles.sortText}>{s}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View> */}
+
+      {/* filter launches client-side by selected status */}
+      {/** compute filtered launches */}
       <LaunchList
-        launches={launches}
+        launches={launches.filter((l) => {
+          if (!filterStatus || filterStatus === "All") return true;
+          const s = getLaunchStatus(l);
+          return s === filterStatus;
+        })}
         onLaunchPress={(id) => handleLaunchPress(id)}
         sortBy={sortBy}
         sortDir={sortDir}
@@ -136,5 +192,42 @@ const styles = StyleSheet.create({
   sortText: {
     color: "#222",
     fontWeight: "600",
+  },
+  filterRow: {
+    width: "100%",
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    alignItems: "flex-start",
+    position: "relative",
+  },
+  filterButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#fff",
+  },
+  dropdown: {
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    backgroundColor: "#fff",
+    borderRadius: 6,
+    width: 200,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  filterButtonActive: {
+    borderColor: "#0a9e3b",
+    backgroundColor: "#eaf7ec",
   },
 });
